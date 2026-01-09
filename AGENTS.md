@@ -1,39 +1,22 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Crates in this repo are Rust libraries: `wp-connector-api/`, `wp-ctrl-api/`, `wp-data-model/`, `wp-enrich-api/`, `wp-parse-api/`.
-- Each crate keeps code in `src/` with unit tests co-located via `#[cfg(test)]`. Some crates depend on siblings in the top-level `warp-pase-system` workspace (e.g., `../../wp-data-model`).
-- No binaries here; these crates define traits, models, and helpers consumed by other services.
+`wp-connector-api` is a Rust library crate living inside the broader `warp-pase-system` workspace. Source modules reside in `src/`, and unit tests live alongside their implementations within `#[cfg(test)]` blocks. The crate consumes workspace siblings such as `../../wp-data-model`, so keep cross-crate paths stable and prefer reusing shared models instead of reinventing types. No binaries are shipped from this repo; the exported traits and helpers are consumed by upstream services.
 
 ## Build, Test, and Development Commands
-- From a crate directory (recommended when working only on that crate):
-  - `cargo build` — compile the library
-  - `cargo test` — run unit tests
-  - `cargo doc --open` — build docs locally
-- From the workspace root (warp-pase-system), target a crate by package name:
-  - `cargo build -p wp-parse-api`
-  - `cargo test  -p wp-data-model`
-- Lint/format before committing:
-  - `cargo fmt --all`
-  - `cargo clippy --all-targets --all-features -D warnings`
+- `cargo build` — compile the library from this crate directory.
+- `cargo test` — run the unit-test suite; add `-p wp-connector-api` when invoking from the workspace root.
+- `cargo doc --open` — generate API docs locally for quick contract reviews.
+- `cargo fmt --all` and `cargo clippy --all-targets --all-features -D warnings` — enforce formatting and linting before sending changes.
 
 ## Coding Style & Naming Conventions
-- Rust 2021 edition; use `rustfmt` defaults (4-space indent, max width defaults).
-- Types/traits: `CamelCase`; functions/modules: `snake_case`; constants: `SCREAMING_SNAKE_CASE`.
-- Prefer returning the workspace error type over panicking; document public APIs with `///` and crate/module docs with `//!`.
+Target Rust 2021 defaults (4-space indentation, 100-column wraps). Modules and functions use `snake_case`, types and traits use `CamelCase`, and constants stay in `SCREAMING_SNAKE_CASE`. Document public APIs with `///` comments and prefer small, focused modules. Run `cargo fmt` after editing to keep style consistent across the workspace.
 
 ## Testing Guidelines
-- Unit tests live next to code (`mod tests { ... }`); name tests `test_*` for clarity.
-- Async tests use `#[tokio::test]` where applicable.
-- Optional fuzzing in `wp-data-model/fuzz/` with `cargo fuzz run <target>` (requires `cargo-fuzz`).
+Keep unit tests close to the code they cover and name them `test_*` for clarity. Async scenarios should use `#[tokio::test]`. Execute `cargo test` inside this crate or `cargo test -p wp-connector-api` at the workspace root to make sure shared dependencies build. When adding new surface area, target the relevant module plus any shared data-model crates affected.
 
 ## Commit & Pull Request Guidelines
-- Use Conventional Commits style; scope with the crate when helpful:
-  - Example: `feat(wp-parse-api): add RawData parser for bytes input`
-- PRs should include: a clear description, linked issues, tests for behavior changes, and any relevant screenshots/logs.
-- Before opening a PR, ensure `cargo fmt`, `cargo clippy`, and `cargo test` pass for the affected crates (or targeted `-p` in the workspace).
+Follow Conventional Commits, scoping by crate when it adds context (e.g., `feat(wp-connector-api): add raw event mapper`). PRs should link issues, summarize behavioral changes, call out new configs, and include logs or screenshots when they help reviewers. Confirm `cargo fmt`, `cargo clippy`, and targeted `cargo test` runs before requesting review.
 
 ## Security & Configuration Tips
-- Do not commit secrets or sample keys; treat all inputs as untrusted.
-- Avoid `unwrap`/`expect` in library code; return `Result` with meaningful errors.
-- Keep cross-crate paths aligned with the workspace; prefer workspace versions/deps when available.
+Never commit secrets or example keys; rely on workspace configuration files checked into `warp-pase-system`. Treat all inputs as untrusted and avoid `unwrap`/`expect` in library paths—bubble up meaningful errors instead. Keep dependency versions aligned with the workspace to benefit from shared audits and coordinated updates.

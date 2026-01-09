@@ -1,72 +1,42 @@
-# wp-open-api
+# wp-connector-api
 
-![CI](https://github.com/wp-labs/wp-open-api/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/wp-labs/wp-open-api/graph/badge.svg?token=6SVCXBHB6B)](https://codecov.io/gh/wp-labs/wp-open-api)
-![License](https://img.shields.io/badge/License-Elastic%202.0-green.svg)
-![Rust](https://img.shields.io/badge/rust-stable%2Bbeta-orange.svg)
+`wp-connector-api` defines the sink/source runtime traits, connector configuration helpers, and shared error types that power WarpParse ingestion pipelines. The crate ships as part of the `warp-pase-system` workspace and is consumed by services that need to register connectors or embed the WarpParse runtime.
 
-`wp-open-api` maintains the shared APIs for warp-parse: sink/source runtime traits, parser interfaces, and the core data model. All crates here are reusable Rust libraries consumed by other services.
+## Highlights
+- Declarative connector config parsing (`src/config`) with helpers to convert TOML maps into runtime parameters.
+- Unified runtime traits for both sinks and sources (`src/runtime`) with async-friendly factories and control channels.
+- Shared error taxonomy, summaries, and extensions (`src/errors`) so downstream crates can bubble up actionable diagnostics.
+- Lightweight param/value utilities (`src/types.rs`) that mirror data structures from `wp-model-core` and `wp-parse-api`.
 
-## Structure
-
-- `wp-connector-api/`: sink/source runtime traits plus helper types.
-- `wp-model-core/`: fields, records, value types, and formatting utilities.
-- `wp-parse-api/`: RawData, parser-facing traits, and error types for the ingestion pipeline.
+## Repository Layout
+- `src/config/` — connector kind adapters plus `ParamMap` builders.
+- `src/runtime/` — connector registry, sink/source factories, async handles, and stream/event definitions.
+- `src/errors/` — sink/source error variants, summaries, and helper traits.
+- `tests/` — integration coverage, e.g., `demo_connector.rs` ensures the trait surfaces stay ergonomic.
+- `docs/` — rendered API notes in both English and Chinese for downstream consumers.
 
 ## Build & Test
-
 ```bash
-# inside a crate
+# run inside this crate
 cargo build
 cargo test
 
-# from the workspace root targeting a package
-cargo build -p wp-parse-api
-cargo test  -p wp-model-core
+# invoke from the workspace root
+cargo build -p wp-connector-api
+cargo test  -p wp-connector-api
 
-# lint & format
+# developer hygiene
 cargo fmt --all
 cargo clippy --all-targets --all-features -D warnings
+cargo doc --open
 ```
+Enable the optional `test_helpers` feature when experimentation requires additional fixtures.
 
-## Maintainers & Attribution
+## Development Workflow
+Follow the contributor playbook in [AGENTS.md](AGENTS.md). That document covers structure, coding style, and release expectations for the entire workspace. In short, keep modules focused, document public APIs with `///`, avoid panics in library code, and make sure formatting, linting, and targeted tests succeed before requesting review.
 
-- Default copyright/maintainer signature: `WarpParse Dev Team`. If publishing under a personal name, update `[workspace.package].authors` and the copyright line in `LICENSE`.
-- Contributions are accepted under Apache 2.0; submitting code implies agreeing to the same license.
-- For commercial licensing or branding questions, open an issue and tag the WarpParse Dev Team.
+## License
+This crate is distributed under the [Elastic License 2.0](LICENSE). Update `[workspace.package].authors` plus the tail of `LICENSE` if you redistribute builds under a different publisher name.
 
----
-
-# wp-open-api（中文）
-
-`wp-open-api` 汇集了 warp-parse 在数据接入、解析与核心模型上的公共 API，全部以 Rust library 形式供上层服务复用。
-
-## 仓库结构
-
-- `wp-connector-api/`：Sink/Source 运行时接口与辅助 Trait。
-- `wp-model-core/`：字段、记录、值类型以及格式化工具。
-- `wp-parse-api/`：RawData、解析接口与错误定义。
-
-## 构建与测试
-
-```bash
-# 进入某个 crate 后执行
-cargo build
-cargo test
-
-# 在工作区根按包名触发
-cargo build -p wp-parse-api
-cargo test  -p wp-model-core
-
-# 常用检查
-cargo fmt --all
-cargo clippy --all-targets --all-features -D warnings
-```
-
-## 开源许可
-
-本仓库使用 [ELv2](LICENSE)。如需二次分发，请保留 License/NOTICE，并在修改时注明。
-
-## 开发者声明
-- 默认署名：`WarpParse Dev Team`。如需个人发布，可修改 `[workspace.package].authors` 及 `LICENSE` 尾部版权信息。
-欢迎通过 issue/PR 扩展解析模型、改进 API 或补充文档。
+## 中文简介
+`wp-connector-api` 提供 WarpParse 连接器运行时接口、配置解析工具与统一错误定义。请参考 [AGENTS.md](AGENTS.md) 获取贡献指南，按 `cargo build/test -p wp-connector-api` 完成构建，并在提交前执行 `cargo fmt` 与 `cargo clippy`。仓库遵循 ELv2 许可，可根据需要调整作者署名。

@@ -2,6 +2,15 @@
 name = "wp-connector-api"
 version = "0.7.0"
 edition = "2024"
+description = "Connector runtime traits, config helpers, and errors for WarpParse sinks and sources"
+authors = ["WarpParse Dev Team"]
+license = "Elastic-2.0"
+readme = "README.md"
+repository = "https://github.com/wp-labs/wp-connector-api"
+homepage = "https://github.com/wp-labs/wp-connector-api"
+documentation = "https://docs.rs/wp-connector-api"
+keywords = ["warpparse", "connector", "ingestion", "runtime", "sink"]
+categories = ["asynchronous", "network-programming", "api-bindings"]
 
 [lib]
 name = "wp_connector_api"
