@@ -74,6 +74,9 @@ pub trait SourceDefProvider: Send + Sync + 'static {
     /// Returns the connector definition for source mode.
     fn source_def(&self) -> ConnectorDef;
 
+    fn source_defs(&self) -> Vec<ConnectorDef> {
+        [self.source_def()].into()
+    }
     /// Validates a source connector definition.
     ///
     /// Override to add custom validation logic. Returns `Ok(())` by default.
@@ -106,6 +109,9 @@ pub trait SinkDefProvider: Send + Sync + 'static {
     /// Returns the connector definition for sink mode.
     fn sink_def(&self) -> ConnectorDef;
 
+    fn sink_defs(&self) -> Vec<ConnectorDef> {
+        [self.sink_def()].into()
+    }
     /// Validates a sink connector definition.
     ///
     /// Override to add custom validation logic. Returns `Ok(())` by default.
