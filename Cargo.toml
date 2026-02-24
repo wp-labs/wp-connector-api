@@ -1,6 +1,6 @@
 [package]
 name = "wp-connector-api"
-version = "0.7.2"
+version = "0.8.0"
 edition = "2024"
 description = "Connector runtime traits, config helpers, and errors for WarpParse sinks and sources"
 authors = ["WarpParse Dev Team"]
@@ -21,11 +21,10 @@ async-trait = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 toml =  "0.9"
 anyhow = "1.0"
-wp-parse-api = "0.7"
 wp-model-core = "0.8"
 async-broadcast = "0.7"
 thiserror = "2.0"
-orion-error= "0.5"
+orion-error = { version = "0.6", features = ["serde"] }
 derive_more = "2.1"
 smol_str = { version = "0.3", features = ["serde"] }
 serde_derive = "1"

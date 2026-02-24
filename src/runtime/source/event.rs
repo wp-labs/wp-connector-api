@@ -1,7 +1,7 @@
 use smol_str::SmolStr;
 use std::net::IpAddr;
 use std::sync::Arc;
-use wp_parse_api::RawData;
+use wp_model_core::raw::RawData;
 
 use super::types::Tags;
 
@@ -65,7 +65,6 @@ impl std::fmt::Debug for SourceEvent {
 mod tests {
     use super::*;
     use std::sync::Arc;
-    use wp_parse_api::RawData;
 
     #[test]
     fn source_event_new_sets_defaults() {

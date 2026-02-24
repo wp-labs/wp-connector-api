@@ -15,7 +15,7 @@ use wp_connector_api::{
     SourceResult, SourceSpec, SourceSvcIns, Tags,
 };
 use wp_model_core::model::DataRecord;
-use wp_parse_api::RawData;
+use wp_model_core::raw::RawData;
 
 // ============================================================================
 // Demo Source: produces configurable events from memory
