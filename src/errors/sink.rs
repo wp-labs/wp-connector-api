@@ -1,7 +1,8 @@
 use derive_more::From;
 use orion_error::StructError;
-use orion_error::{ErrorCode, UvsReason};
+use orion_error::{ErrorCode, ToStructError, UvsReason};
 use serde::Serialize;
+use std::error::Error as StdError;
 use std::sync::mpsc::SendError;
 use thiserror::Error;
 
@@ -60,6 +61,21 @@ pub type SinkResult<T> = Result<T, SinkError>;
 impl SinkReason {
     pub fn sink<S: Into<String>>(msg: S) -> Self {
         SinkReason::Sink(msg.into())
+    }
+
+    pub fn err(self) -> SinkError {
+        self.to_err()
+    }
+
+    pub fn err_detail<S: Into<String>>(self, detail: S) -> SinkError {
+        self.to_err().with_detail(detail.into())
+    }
+
+    pub fn err_source<E>(self, source: E) -> SinkError
+    where
+        E: StdError + Send + Sync + 'static,
+    {
+        self.to_err().with_source(source)
     }
 }
 

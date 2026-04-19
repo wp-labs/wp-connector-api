@@ -1,6 +1,7 @@
 use derive_more::From;
-use orion_error::{ErrorCode, StructError, UvsReason};
+use orion_error::{ErrorCode, StructError, ToStructError, UvsReason};
 use serde::Serialize;
+use std::error::Error as StdError;
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq, Serialize, From)]
@@ -43,6 +44,23 @@ impl ErrorCode for SourceReason {
 
 pub type SourceError = StructError<SourceReason>;
 pub type SourceResult<T> = Result<T, StructError<SourceReason>>;
+
+impl SourceReason {
+    pub fn err(self) -> SourceError {
+        self.to_err()
+    }
+
+    pub fn err_detail<S: Into<String>>(self, detail: S) -> SourceError {
+        self.to_err().with_detail(detail.into())
+    }
+
+    pub fn err_source<E>(self, source: E) -> SourceError
+    where
+        E: StdError + Send + Sync + 'static,
+    {
+        self.to_err().with_source(source)
+    }
+}
 
 #[cfg(test)]
 mod tests {
