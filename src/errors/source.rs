@@ -113,4 +113,17 @@ mod tests {
         let code = SourceReason::Disconnect("x".into()).error_code();
         assert!((500..600).contains(&code));
     }
+
+    #[test]
+    fn source_reason_err_detail_sets_detail() {
+        let err = SourceReason::Other("boom".into()).err_detail("ctx");
+        assert_eq!(err.detail().as_deref(), Some("ctx"));
+    }
+
+    #[test]
+    fn source_reason_err_source_preserves_source_message() {
+        let err = SourceReason::Disconnect("read failed".into())
+            .err_source(std::io::Error::other("disk gone"));
+        assert!(err.to_string().contains("disk gone"));
+    }
 }

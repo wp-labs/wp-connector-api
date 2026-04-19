@@ -155,4 +155,16 @@ mod tests {
         unique.dedup();
         assert_eq!(codes.len(), unique.len(), "error codes should be distinct");
     }
+
+    #[test]
+    fn sink_reason_err_detail_sets_detail() {
+        let err = SinkReason::sink("flush failed").err_detail("io timeout");
+        assert_eq!(err.detail().as_deref(), Some("io timeout"));
+    }
+
+    #[test]
+    fn sink_reason_err_source_preserves_source_message() {
+        let err = SinkReason::sink("udp send failed").err_source(std::io::Error::other("no route"));
+        assert!(err.to_string().contains("no route"));
+    }
 }
