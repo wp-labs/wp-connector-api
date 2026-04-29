@@ -1,38 +1,20 @@
 use derive_more::From;
-use orion_error::StructError;
-use orion_error::{ErrorCode, ToStructError, UvsReason};
+use orion_error::conversion::ToStructError;
+use orion_error::{OrionError, StructError, UvsReason};
 use serde::Serialize;
 use std::error::Error as StdError;
 use std::sync::mpsc::SendError;
-use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Serialize, From)]
+#[derive(Debug, PartialEq, Serialize, From, OrionError)]
 pub enum SinkReason {
-    #[error("sink unavailable {0}")]
+    #[orion_error(identity = "biz.sink")]
     Sink(String),
-    #[error("set mock error")]
+    #[orion_error(identity = "biz.sink_mock", message = "set mock error")]
     Mock,
-    #[error("stg ctrl error")]
+    #[orion_error(identity = "biz.sink_stg_ctrl", message = "stg ctrl error")]
     StgCtrl,
-    #[error("{0}")]
+    #[orion_error(transparent)]
     Uvs(UvsReason),
-}
-impl ErrorCode for SinkReason {
-    fn error_code(&self) -> i32 {
-        match self {
-            // General sink errors
-            SinkReason::Sink(_) => 500, // General sink unavailable
-
-            // Testing/mock errors
-            SinkReason::Mock => 599, // Mock/test error
-
-            // Storage control errors
-            SinkReason::StgCtrl => 510, // Storage control error
-
-            // Delegate to wrapped reason
-            SinkReason::Uvs(r) => r.error_code(),
-        }
-    }
 }
 
 pub type SinkError = StructError<SinkReason>;
@@ -133,27 +115,6 @@ mod tests {
         }
         let detail = err.detail();
         assert_eq!(detail.as_ref().map(|s| s.as_str()), Some("io timeout"));
-    }
-
-    #[test]
-    fn sink_reason_error_codes() {
-        assert_eq!(SinkReason::Sink("test".into()).error_code(), 500);
-        assert_eq!(SinkReason::Mock.error_code(), 599);
-        assert_eq!(SinkReason::StgCtrl.error_code(), 510);
-    }
-
-    #[test]
-    fn sink_reason_error_codes_are_distinct() {
-        let codes = vec![
-            SinkReason::Sink("x".into()).error_code(),
-            SinkReason::Mock.error_code(),
-            SinkReason::StgCtrl.error_code(),
-        ];
-        // Verify all codes are different
-        let mut unique = codes.clone();
-        unique.sort();
-        unique.dedup();
-        assert_eq!(codes.len(), unique.len(), "error codes should be distinct");
     }
 
     #[test]

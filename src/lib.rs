@@ -4,7 +4,6 @@ mod runtime;
 mod types;
 extern crate async_trait;
 extern crate serde;
-extern crate thiserror;
 extern crate wp_model_core;
 // keep top-level convenient re-exports stable
 pub use config::param::{parammap_from_toml_map, parammap_from_toml_table};
