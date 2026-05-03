@@ -9,7 +9,7 @@ pub trait ConnectorKindAdapter: Send + Sync {
     fn defaults(&self) -> ParamMap {
         ParamMap::new()
     }
-    fn url_to_params(&self, _url: &str) -> anyhow::Result<ParamMap> {
+    fn url_to_params(&self, _url: &str) -> Result<ParamMap, String> {
         Ok(ParamMap::new())
     }
 }

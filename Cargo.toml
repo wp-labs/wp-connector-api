@@ -1,10 +1,10 @@
 [package]
 name = "wp-connector-api"
-version = "0.9.0" #@gxl:set(version)
+version = "0.10.0" #@gxl:set(version)
 edition = "2024"
 description = "Connector runtime traits, config helpers, and errors for WarpParse sinks and sources"
 authors = ["WarpParse Dev Team"]
-license = "Elastic-2.0"
+license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/wp-labs/wp-connector-api"
 homepage = "https://github.com/wp-labs/wp-connector-api"
@@ -16,15 +16,15 @@ categories = ["asynchronous", "network-programming", "api-bindings"]
 name = "wp_connector_api"
 
 [dependencies]
-once_cell = "1.21"
+
 async-trait = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 toml =  "1.0"
-anyhow = "1.0"
+
 wp-model-core = "0.8"
 async-broadcast = "0.7"
-orion-error = { version = "0.7", features = ["serde"] }
-derive_more = "2.1"
+orion-error = { version = "0.8", features = ["serde"] }
+derive_more = { version = "2.1", features = ["from"] }
 smol_str = { version = "0.3", features = ["serde"] }
 serde_derive = "1"
 serde_json = "1"

@@ -1,6 +1,6 @@
 use derive_more::From;
 use orion_error::conversion::ToStructError;
-use orion_error::{OrionError, StructError, UvsReason};
+use orion_error::{OrionError, StructError, UnifiedReason};
 use serde::Serialize;
 use std::error::Error as StdError;
 
@@ -19,7 +19,7 @@ pub enum SourceReason {
     #[from(skip)]
     Other(String),
     #[orion_error(transparent)]
-    Uvs(UvsReason),
+    Uvs(UnifiedReason),
 }
 
 pub type SourceError = StructError<SourceReason>;
@@ -56,6 +56,9 @@ mod tests {
     fn source_reason_err_source_preserves_source_message() {
         let err = SourceReason::Disconnect("read failed".into())
             .err_source(std::io::Error::other("disk gone"));
-        assert!(err.to_string().contains("disk gone"));
+        // StructError no longer impls Error in 0.8; inspect source via as_std()
+        let as_std = err.as_std();
+        let src = as_std.source().expect("source should be present");
+        assert!(src.to_string().contains("disk gone"));
     }
 }

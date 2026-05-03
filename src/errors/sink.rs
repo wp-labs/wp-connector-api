@@ -1,6 +1,6 @@
 use derive_more::From;
 use orion_error::conversion::ToStructError;
-use orion_error::{OrionError, StructError, UvsReason};
+use orion_error::{OrionError, StructError, UnifiedReason};
 use serde::Serialize;
 use std::error::Error as StdError;
 use std::sync::mpsc::SendError;
@@ -14,7 +14,7 @@ pub enum SinkReason {
     #[orion_error(identity = "biz.sink_stg_ctrl", message = "stg ctrl error")]
     StgCtrl,
     #[orion_error(transparent)]
-    Uvs(UvsReason),
+    Uvs(UnifiedReason),
 }
 
 pub type SinkError = StructError<SinkReason>;
@@ -29,12 +29,6 @@ where
 {
     fn from(err: SendError<T>) -> Self {
         SinkReason::Sink(format!("send error: {}", err.0.summary()))
-    }
-}
-
-impl From<anyhow::Error> for SinkReason {
-    fn from(e: anyhow::Error) -> Self {
-        SinkReason::Sink(format!("{}", e))
     }
 }
 
@@ -72,9 +66,9 @@ where
     fn owe_sink<S: Into<String>>(self, msg: S) -> Result<T, StructError<SinkReason>> {
         match self {
             Ok(v) => Ok(v),
-            Err(e) => {
-                Err(StructError::from(SinkReason::Sink(msg.into())).with_detail(e.to_string()))
-            }
+            Err(e) => Err(SinkReason::Sink(msg.into())
+                .to_err()
+                .with_detail(e.to_string())),
         }
     }
 }
@@ -126,6 +120,8 @@ mod tests {
     #[test]
     fn sink_reason_err_source_preserves_source_message() {
         let err = SinkReason::sink("udp send failed").err_source(std::io::Error::other("no route"));
-        assert!(err.to_string().contains("no route"));
+        let as_std = err.as_std();
+        let src = as_std.source().expect("source should be present");
+        assert!(src.to_string().contains("no route"));
     }
 }
