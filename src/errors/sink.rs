@@ -1,14 +1,13 @@
-use derive_more::From;
 use orion_error::conversion::ToStructError;
 use orion_error::{OrionError, StructError, UnifiedReason};
 use serde::Serialize;
 use std::error::Error as StdError;
 use std::sync::mpsc::SendError;
 
-#[derive(Debug, PartialEq, Serialize, From, OrionError)]
+#[derive(Debug, PartialEq, Serialize, OrionError)]
 pub enum SinkReason {
-    #[orion_error(identity = "biz.sink")]
-    Sink(String),
+    #[orion_error(identity = "biz.sink", message = "sink error")]
+    Sink,
     #[orion_error(identity = "biz.sink_mock", message = "set mock error")]
     Mock,
     #[orion_error(identity = "biz.sink_stg_ctrl", message = "stg ctrl error")]
@@ -23,20 +22,18 @@ pub trait ReasonSummary {
     fn summary(&self) -> String;
 }
 
-impl<T> From<SendError<T>> for SinkReason
-where
-    T: ReasonSummary,
-{
-    fn from(err: SendError<T>) -> Self {
-        SinkReason::Sink(format!("send error: {}", err.0.summary()))
-    }
-}
-
 pub type SinkResult<T> = Result<T, SinkError>;
 
 impl SinkReason {
-    pub fn sink<S: Into<String>>(msg: S) -> Self {
-        SinkReason::Sink(msg.into())
+    pub fn sink<S: Into<String>>(msg: S) -> SinkError {
+        SinkReason::Sink.err_detail(msg)
+    }
+
+    pub fn send_error<T>(err: SendError<T>) -> SinkError
+    where
+        T: ReasonSummary,
+    {
+        SinkReason::sink(format!("send error: {}", err.0.summary()))
     }
 
     pub fn err(self) -> SinkError {
@@ -66,9 +63,9 @@ where
     fn owe_sink<S: Into<String>>(self, msg: S) -> Result<T, StructError<SinkReason>> {
         match self {
             Ok(v) => Ok(v),
-            Err(e) => Err(SinkReason::Sink(msg.into())
+            Err(e) => Err(SinkReason::Sink
                 .to_err()
-                .with_detail(e.to_string())),
+                .with_detail(format!("{}: {}", msg.into(), e))),
         }
     }
 }
@@ -92,11 +89,9 @@ mod tests {
         let (tx, rx) = mpsc::channel();
         drop(rx);
         let err = tx.send(Summary("queue overflow")).unwrap_err();
-        let reason = SinkReason::from(err);
-        match reason {
-            SinkReason::Sink(msg) => assert!(msg.contains("queue overflow")),
-            other => panic!("unexpected reason: {other:?}"),
-        }
+        let err = SinkReason::send_error(err);
+        assert_eq!(err.reason(), &SinkReason::Sink);
+        assert_eq!(err.detail().as_deref(), Some("send error: queue overflow"));
     }
 
     #[test]
@@ -104,22 +99,25 @@ mod tests {
         let failing: Result<(), &str> = Err("io timeout");
         let err = failing.owe_sink("flush failed").unwrap_err();
         match err.reason() {
-            SinkReason::Sink(msg) => assert_eq!(msg, "flush failed"),
+            SinkReason::Sink => {}
             other => panic!("unexpected reason: {other:?}"),
         }
         let detail = err.detail();
-        assert_eq!(detail.as_ref().map(|s| s.as_str()), Some("io timeout"));
+        assert_eq!(
+            detail.as_ref().map(|s| s.as_str()),
+            Some("flush failed: io timeout")
+        );
     }
 
     #[test]
     fn sink_reason_err_detail_sets_detail() {
-        let err = SinkReason::sink("flush failed").err_detail("io timeout");
-        assert_eq!(err.detail().as_deref(), Some("io timeout"));
+        let err = SinkReason::sink("flush failed");
+        assert_eq!(err.detail().as_deref(), Some("flush failed"));
     }
 
     #[test]
     fn sink_reason_err_source_preserves_source_message() {
-        let err = SinkReason::sink("udp send failed").err_source(std::io::Error::other("no route"));
+        let err = SinkReason::Sink.err_source(std::io::Error::other("no route"));
         let as_std = err.as_std();
         let src = as_std.source().expect("source should be present");
         assert!(src.to_string().contains("no route"));

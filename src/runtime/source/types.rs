@@ -137,14 +137,14 @@ pub trait DataSource: Send + Sync {
     ///
     /// Only supported when `caps().ack == true`. Returns error by default.
     async fn ack(&mut self, _token: Arc<dyn AckToken>) -> SourceResult<()> {
-        Err(SourceReason::SupplierError("ack unsupported".into()).into())
+        Err(SourceReason::supplier_error("ack unsupported"))
     }
 
     /// Seek to a specific position in the source.
     ///
     /// Only supported when `caps().seek == true`. Returns error by default.
     async fn seek(&mut self, _pos: Arc<dyn SeekPosition>) -> SourceResult<()> {
-        Err(SourceReason::SupplierError("seek unsupported".into()).into())
+        Err(SourceReason::supplier_error("seek unsupported"))
     }
 }
 

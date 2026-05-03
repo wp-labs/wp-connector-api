@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Change `SinkReason::Sink` and `SourceReason::{SupplierError, Disconnect, Other}` to unit variants so domain reasons only carry classification.
+- Change `SinkReason::sink(...)` and source detail helpers to return `StructError` values with message detail stored on `StructError`.
+- Use `SinkReason::send_error(...)` to preserve `SendError` summaries in `StructError.detail`.
+
+### Removed
+- Remove `From<SendError<T>> for SinkReason`; converting directly to a reason would discard the send error summary.
+
 ## [0.10.0] - 2026-05-03
 
 ### Changed

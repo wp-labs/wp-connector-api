@@ -1,6 +1,6 @@
 [package]
 name = "wp-connector-api"
-version = "0.10.0" #@gxl:set(version)
+version = "0.10.1" #@gxl:set(version)
 edition = "2024"
 description = "Connector runtime traits, config helpers, and errors for WarpParse sinks and sources"
 authors = ["WarpParse Dev Team"]
