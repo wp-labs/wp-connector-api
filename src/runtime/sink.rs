@@ -7,6 +7,40 @@ use crate::{SinkDefProvider, SinkResult};
 
 // Reuse workspace error type to avoid duplicating an error abstraction
 
+// ---------- Batch Metadata ----------
+
+/// Batch-level runtime metadata passed from engine to sink.
+///
+/// `BatchMeta` carries information that belongs to the batch/frame level
+/// (not to individual records), such as the OML output model name.
+/// Sinks decide how to consume it — e.g. `TcpArrowSink` uses `oml_name`
+/// as the Arrow frame tag in `arrow_framed` mode.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct BatchMeta {
+    /// OML output model name — identifies the logical output stream.
+    pub oml_name: Option<String>,
+}
+
+impl BatchMeta {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_oml_name(name: impl Into<String>) -> Self {
+        Self {
+            oml_name: Some(name.into()),
+        }
+    }
+
+    pub fn oml_name(&self) -> Option<&str> {
+        self.oml_name.as_deref()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.oml_name.as_deref().is_none_or(str::is_empty)
+    }
+}
+
 // ---------- Core Sink Traits ----------
 
 /// Runtime control trait for managing sink lifecycle.
@@ -65,6 +99,38 @@ pub trait AsyncRecordSink {
     /// # Arguments
     /// * `data` - Vector of records wrapped in Arc for shared ownership
     async fn sink_records(&mut self, data: Vec<Arc<DataRecord>>) -> SinkResult<()>;
+
+    /// Write multiple data records with batch-level metadata.
+    ///
+    /// Default implementation ignores [`BatchMeta`] and falls back to
+    /// [`sink_records`](Self::sink_records), so existing connectors compile
+    /// unchanged. Sinks that need the metadata should override this method.
+    ///
+    /// # Implementation Requirements
+    ///
+    /// Sink implementations SHOULD consume `meta.oml_name` according to their
+    /// output format:
+    ///
+    /// | Sink 类型 | `oml_name` 用途 |
+    /// |-----------|------------------|
+    /// | **Arrow** (`arrow_framed`) | 写入 frame header `tag`（`[tag_len][tag][IPC]`） |
+    /// | **Arrow** (`arrow_ipc`) | 忽略（裸 IPC Stream 无 tag 位置） |
+    /// | **JSON / CSV**（文本格式） | 作为 `wp_oml_name` 字段追加到每条记录中 |
+    ///
+    /// 当 `meta.oml_name` 为空时，所有 sink 保持原有行为（Arrow 使用 connector
+    /// 配置的固定 `tag`，文本格式不追加字段）。
+    ///
+    /// # Arguments
+    /// * `meta` - Batch-level runtime metadata (e.g. OML output name)
+    /// * `data` - Vector of records wrapped in Arc for shared ownership
+    async fn sink_records_with_meta(
+        &mut self,
+        meta: BatchMeta,
+        data: Vec<Arc<DataRecord>>,
+    ) -> SinkResult<()> {
+        let _ = meta;
+        self.sink_records(data).await
+    }
 }
 
 /// Trait for sinking raw data (strings and bytes).

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-06-26
+
+### Added
+
+- `BatchMeta` 结构体：批次级运行时元信息.
+- `AsyncRecordSink::sink_records_with_meta` 默认方法：引擎可把批次级 metadata 传给 sink，默认实现忽略 meta 回退到 `sink_records`，保证向后兼容
+
 ## [0.10.1] - 2026-05-03
 
 ### Changed
@@ -42,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0] - (Previous Release)
 
-[Unreleased]: https://github.com/wp-labs/wp-connector-api/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/wp-labs/wp-connector-api/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/wp-labs/wp-connector-api/compare/v0.10.1...v0.11.0
 [0.10.0]: https://github.com/wp-labs/wp-connector-api/releases/tag/v0.10.0
 [0.9.0]: https://github.com/wp-labs/wp-connector-api/releases/tag/v0.9.0
 [0.7.0]: https://github.com/wp-labs/wp-connector-api/releases/tag/v0.7.0

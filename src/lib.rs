@@ -21,8 +21,8 @@ pub use runtime::cnn::{ConnectorDef, ConnectorScope, SinkDefProvider, SourceDefP
 pub use types::ParamMap;
 // Runtime: sink side
 pub use runtime::sink::{
-    AsyncCtrl, AsyncRawDataSink, AsyncRecordSink, AsyncSink, ResolvedSinkSpec as SinkSpec,
-    SinkBuildCtx, SinkFactory, SinkHandle,
+    AsyncCtrl, AsyncRawDataSink, AsyncRecordSink, AsyncSink, BatchMeta,
+    ResolvedSinkSpec as SinkSpec, SinkBuildCtx, SinkFactory, SinkHandle,
 };
 
 pub use runtime::source::{
