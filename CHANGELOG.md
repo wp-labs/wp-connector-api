@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.11.1] - 2026-07-12
+
+### Changed
+
+- `Tags` 迁移至 `wp-source-types` v0.1.0，本地替换为 `pub use` 重导出
+- `SourceEvent` / `SourceBatch` / `EventPreHook` 迁移至 `wp-source-types`，本地替换为重导出
+- 新增 `wp-source-types` 依赖
+
 ## [0.11.0] - 2026-06-26
 
 ### Added
@@ -49,7 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0] - (Previous Release)
 
-[Unreleased]: https://github.com/wp-labs/wp-connector-api/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/wp-labs/wp-connector-api/compare/v0.11.1...HEAD
+[0.11.1]: https://github.com/wp-labs/wp-connector-api/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/wp-labs/wp-connector-api/compare/v0.10.1...v0.11.0
 [0.10.0]: https://github.com/wp-labs/wp-connector-api/releases/tag/v0.10.0
 [0.9.0]: https://github.com/wp-labs/wp-connector-api/releases/tag/v0.9.0

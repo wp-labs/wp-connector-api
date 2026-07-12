@@ -1,7 +1,4 @@
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
-use smallvec::SmallVec;
-use smol_str::SmolStr;
 use std::borrow::Cow;
 use std::sync::Arc;
 
@@ -148,131 +145,12 @@ pub trait DataSource: Send + Sync {
     }
 }
 
-const INLINE_TAG_CAPACITY: usize = 16;
-
-/// A lightweight, sorted collection of key-value string tags.
-///
-/// Tags are stored in a `SmallVec` with inline capacity for up to 16 entries,
-/// avoiding heap allocation for typical use cases. Keys are kept sorted
-/// for efficient binary search lookup.
-///
-/// Both keys and values use `SmolStr` for small string optimization,
-/// providing zero-allocation storage for strings ≤22 bytes.
-///
-/// # Example
-/// ```ignore
-/// let mut tags = Tags::new();
-/// tags.set("env", "prod");
-/// tags.set("region", "us-west");
-///
-/// assert_eq!(tags.get("env"), Some("prod"));
-/// assert!(tags.contains_key("region"));
-/// ```
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Tags {
-    item: SmallVec<[(SmolStr, SmolStr); INLINE_TAG_CAPACITY]>,
-}
-
-impl Tags {
-    /// Create a new empty Tags collection.
-    pub fn new() -> Self {
-        Self {
-            item: SmallVec::new(),
-        }
-    }
-
-    /// Set a tag value. If the key exists, the value is updated.
-    ///
-    /// Keys are kept sorted for efficient lookup.
-    pub fn set(&mut self, key: impl Into<SmolStr>, value: impl Into<SmolStr>) {
-        let key = key.into();
-        let value = value.into();
-        match self
-            .item
-            .binary_search_by(|(existing, _)| existing.as_str().cmp(key.as_str()))
-        {
-            Ok(idx) => {
-                self.item[idx].1 = value;
-            }
-            Err(idx) => {
-                self.item.insert(idx, (key, value));
-            }
-        }
-    }
-
-    /// Get a tag value by key.
-    ///
-    /// Returns `None` if the key doesn't exist.
-    pub fn get(&self, key: &str) -> Option<&str> {
-        self.item
-            .binary_search_by(|(existing, _)| existing.as_str().cmp(key))
-            .ok()
-            .and_then(|idx| self.item.get(idx))
-            .map(|(_, val)| val.as_str())
-    }
-
-    /// Check if a key exists in the tags.
-    pub fn contains_key(&self, key: &str) -> bool {
-        self.item
-            .binary_search_by(|(existing, _)| existing.as_str().cmp(key))
-            .is_ok()
-    }
-
-    /// Remove a tag by key.
-    ///
-    /// Returns the removed value if the key existed.
-    pub fn remove(&mut self, key: &str) -> Option<SmolStr> {
-        match self
-            .item
-            .binary_search_by(|(existing, _)| existing.as_str().cmp(key))
-        {
-            Ok(idx) => Some(self.item.remove(idx).1),
-            Err(_) => None,
-        }
-    }
-
-    /// Check if the collection is empty.
-    pub fn is_empty(&self) -> bool {
-        self.item.is_empty()
-    }
-
-    /// Return the number of tags.
-    pub fn len(&self) -> usize {
-        self.item.len()
-    }
-
-    /// Iterate over all key-value pairs.
-    pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.item.iter().map(|(k, v)| (k.as_str(), v.as_str()))
-    }
-
-    /// Iterate over all keys.
-    pub fn keys(&self) -> impl Iterator<Item = &str> {
-        self.item.iter().map(|(k, _)| k.as_str())
-    }
-
-    /// Iterate over all values.
-    pub fn values(&self) -> impl Iterator<Item = &str> {
-        self.item.iter().map(|(_, v)| v.as_str())
-    }
-
-    /// Clear all tags.
-    pub fn clear(&mut self) {
-        self.item.clear();
-    }
-}
-
-// Deprecated compatibility alias
-impl Tags {
-    /// Set a tag value.
-    #[deprecated(since = "0.6.0", note = "Use `set()` instead")]
-    pub fn set_tag(&mut self, key: &str, value: String) {
-        self.set(SmolStr::from(key), SmolStr::from(value));
-    }
-}
+pub use wp_source_types::Tags;
 
 #[cfg(test)]
 mod tests {
+    use smol_str::SmolStr;
+
     use super::*;
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
