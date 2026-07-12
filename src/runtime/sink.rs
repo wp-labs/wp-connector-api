@@ -12,13 +12,16 @@ use crate::{SinkDefProvider, SinkResult};
 /// Batch-level runtime metadata passed from engine to sink.
 ///
 /// `BatchMeta` carries information that belongs to the batch/frame level
-/// (not to individual records), such as the OML output model name.
+/// (not to individual records), such as the OML output model name and output
+/// metadata field policy.
 /// Sinks decide how to consume it — e.g. `TcpArrowSink` uses `oml_name`
 /// as the Arrow frame tag in `arrow_framed` mode.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct BatchMeta {
     /// OML output model name — identifies the logical output stream.
     pub oml_name: Option<String>,
+    /// Metadata payload fields disabled by the engine/group configuration.
+    pub output_disabled: Vec<String>,
 }
 
 impl BatchMeta {
@@ -29,6 +32,7 @@ impl BatchMeta {
     pub fn with_oml_name(name: impl Into<String>) -> Self {
         Self {
             oml_name: Some(name.into()),
+            output_disabled: Vec::new(),
         }
     }
 
@@ -36,8 +40,27 @@ impl BatchMeta {
         self.oml_name.as_deref()
     }
 
+    pub fn with_output_disabled(fields: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        Self {
+            oml_name: None,
+            output_disabled: fields.into_iter().map(Into::into).collect(),
+        }
+    }
+
+    pub fn set_output_disabled(&mut self, fields: impl IntoIterator<Item = impl Into<String>>) {
+        self.output_disabled = fields.into_iter().map(Into::into).collect();
+    }
+
+    pub fn output_disabled(&self) -> &[String] {
+        &self.output_disabled
+    }
+
+    pub fn is_output_disabled(&self, field: &str) -> bool {
+        self.output_disabled.iter().any(|item| item == field)
+    }
+
     pub fn is_empty(&self) -> bool {
-        self.oml_name.as_deref().is_none_or(str::is_empty)
+        self.oml_name.as_deref().is_none_or(str::is_empty) && self.output_disabled.is_empty()
     }
 }
 
@@ -366,6 +389,23 @@ mod tests {
         let limited = SinkBuildCtx::new(PathBuf::from("/tmp/work")).with_limit(250);
         assert_eq!(limited.rate_limit_rps, 250);
         assert_eq!(limited.replica_cnt, 1);
+    }
+
+    #[test]
+    fn batch_meta_tracks_oml_name_and_output_disabled_fields() {
+        let mut meta = BatchMeta::with_oml_name("nginx_access");
+        assert_eq!(meta.oml_name(), Some("nginx_access"));
+        assert!(meta.output_disabled().is_empty());
+        assert!(!meta.is_empty());
+
+        meta.set_output_disabled(["wp_oml_name", "wp_event_id"]);
+        assert_eq!(meta.output_disabled(), &["wp_oml_name", "wp_event_id"]);
+        assert!(meta.is_output_disabled("wp_oml_name"));
+        assert!(!meta.is_output_disabled("wp_stream_tag"));
+
+        let disabled_only = BatchMeta::with_output_disabled(["wp_oml_name"]);
+        assert_eq!(disabled_only.oml_name(), None);
+        assert!(!disabled_only.is_empty());
     }
 
     #[test]
