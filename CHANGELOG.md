@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-08-04
+
+### ⚠️ BREAKING CHANGES
+
+- 依赖 `wp-model-core` 0.8 → 0.9（上游新增 `Value::BigUint` / `DataType::BigInt` 变体）
+- 依赖 `wp-source-types` 0.1 → 0.2（同步上游版本对齐）
+
+### Changed
+
+- 升级 `wp-model-core` 至 0.9、`wp-source-types` 至 0.2
+
 ## [0.11.2] - 2026-07-12
 
 ### Changed
