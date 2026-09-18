@@ -12,10 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ⚠️ BREAKING CHANGES
 
 - 依赖 `wp-model-core` 0.9 → 0.10（上游把整数类型正名：`Value::Digit` → `Value::Int`、`DataType::Digit` → `DataType::Int`、serde 名 `"digit"` → `"int"`、公开构造器 `from_digit` → `from_int`；`DataType::Array` 的载荷类型 `String` → `ArraySubtype`）
+- 依赖 `wp-source-types` 0.2 → 0.3（同步上游版本对齐；`wp-source-types` 0.3 才依赖 `wp-model-core` 0.10，两者必须同升，否则依赖图里会同时出现 0.9 与 0.10）
 
 ### Changed
 
-- 升级 `wp-model-core` 至 0.10
+- 升级 `wp-model-core` 至 0.10、`wp-source-types` 至 0.3
 
 ## [0.12.0] - 2026-08-04
 
