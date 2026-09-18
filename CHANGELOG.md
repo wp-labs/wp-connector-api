@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-19
+
+### ⚠️ BREAKING CHANGES
+
+- 依赖 `wp-model-core` 0.9 → 0.10（上游把整数类型正名：`Value::Digit` → `Value::Int`、`DataType::Digit` → `DataType::Int`、serde 名 `"digit"` → `"int"`、公开构造器 `from_digit` → `from_int`；`DataType::Array` 的载荷类型 `String` → `ArraySubtype`）
+
+### Changed
+
+- 升级 `wp-model-core` 至 0.10
+
 ## [0.12.0] - 2026-08-04
 
 ### ⚠️ BREAKING CHANGES
@@ -70,7 +80,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0] - (Previous Release)
 
-[Unreleased]: https://github.com/wp-labs/wp-connector-api/compare/v0.11.1...HEAD
+[Unreleased]: https://github.com/wp-labs/wp-connector-api/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/wp-labs/wp-connector-api/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/wp-labs/wp-connector-api/compare/v0.11.2...v0.12.0
 [0.11.1]: https://github.com/wp-labs/wp-connector-api/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/wp-labs/wp-connector-api/compare/v0.10.1...v0.11.0
 [0.10.0]: https://github.com/wp-labs/wp-connector-api/releases/tag/v0.10.0
