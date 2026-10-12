@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-10-12
+
+### Changed
+- **升级到 orion-error 0.9**：`orion-error` 0.8 → 0.9（公共 API 兼容），本 crate 以 `RunReason` 暴露 orion 错误类型，消费方须一同升级以避免跨版本类型冲突。
+
 ## [0.13.0] - 2026-09-19
 
 ### ⚠️ BREAKING CHANGES
